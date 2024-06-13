@@ -51,7 +51,7 @@ var subjID_instructions = "Enter your participant ID."
 var age_instructions = "Enter your age."
 var gender_instructions = "Choose your gender."
 var gender_options = ['Female','Male', 'Other', 'Prefer not to say']
-var text_at_start_block = '<p>Press space to begin.</p>'
+var text_at_start_block = '<p>Press the button to begin.</p>'
 var get_ready_message = '<p>Get ready...</p>'
 var fixation_text = '<div style="font-size:60px;">TEST</div>'
 var end_message = "<p>Thank you for your participation.</p>" +
