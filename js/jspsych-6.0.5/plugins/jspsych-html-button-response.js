@@ -185,4 +185,5 @@ jsPsych.plugins["html-button-response"] = (function() {
   };
 
   return plugin;
+  
 })();

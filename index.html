@@ -5,15 +5,10 @@
 <!--
 
      _                    _ _
-
  ___| |_ ___  _ __       (_) |_
-
 / __| __/ _ \| '_ \ _____| | __|
-
 \__ \ || (_) | |_) |_____| | |_
-
 |___/\__\___/| .__/      |_|\__|
-
              |_|
 
 AUTHORS: Luc Vermeylen & Frederick Verbruggen (2019)
@@ -46,17 +41,22 @@ DESCRIPTION: This is the jsPsych version of the stop-signal task
 
   <script src="js/sprintf.js"></script> <!-- format variables in a string, used for customizable feedback strings in which the variables are not yet declared -->
   <script src="js/custom-stop-signal-plugin.js"></script> <!-- custom plugin for the main stop-signal trial based on the image-keyboard-response plugin -->
+  <script src="js/custom-realeyes-plugin.js"></script> <!-- custom plugin for the main stop-signal trial based on the image-keyboard-response plugin -->
 
   <script src="js/jspsych-detect-held-down-keys.js"></script> <!-- custom plugin for detecting if a key is being held down -->
   <script src="configuration/experiment_variables.js"></script> <!-- parameters to configure the experiment -->
 
   <script src="configuration/text_variables.js"></script> <!-- holds all the text variables for easy modification/translation -->
 
+  <script src="https://codesdwncdn.realeyesit.com/experience-sdk/xp/release/1/reExperienceSdk.min.js"></script>
+
   <link href="js/jspsych-6.0.5/css/jspsych.css" rel="stylesheet" type="text/css"></link> <!-- standard jsPsych css stylesheet -->
 
 </head>
 
-<body></body>
+<body>
+
+</body>
 
 <script>
 
@@ -67,6 +67,118 @@ DESCRIPTION: This is the jsPsych version of the stop-signal task
   ######################################################################### */
 
   // Initialize some important variables
+
+  async function init() {
+            updateResults('Init has been called!', taStatusResults);
+            updateResults('Please wait until Init finishes!', taStatusResults);
+            btInit.disabled = true;
+            /* Configuration of ExperienceSDK */
+            var reConfig = {
+                autoStart: false,
+                accountHash: '3TFXMS',
+                predictionPerSecondLimit: 2,
+            };
+            /* End of configuration of ExperienceSDK*/
+            /* Access camera stream */
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: {
+                        min: 320,
+                        ideal: 640
+                    },
+                    height: {
+                        min: 240,
+                        ideal: 480
+                    },
+                    facingMode: {
+                        ideal: "user"
+                    },
+                },
+                audio: false,
+            });
+            /* End of access camera stream*/
+            /* Start ExperianceSDK */
+            reConfig.cameraStream = cameraStream;
+            window.Realeyesit.experienceSdk.init(reConfig);
+            /* Subscribe to facial expression detected event and error event available events */
+            window.Realeyesit.experienceSdk.on('facialExpressionsDetected', (params) => {
+                max_emotion = null
+                max_prob = 0
+                //console.log(params.results.predictions)
+
+                var x = ["PLACEHOLDER"]
+                var y = [100]
+
+                for (predict in params.results.predictions) {
+                    for (elem in params.results.predictions[predict]) {
+                        if (elem == 'linear') {
+                            //if (params.results.predictions[predict][elem] > max_prob) {
+                            x.push(predict)
+                            y.push(Math.round(params.results.predictions[predict][elem] * 100) + "")
+                            //console.log(params.results.predictions[predict][elem] * 100)
+                        }
+                    }
+                }
+
+                var data = [
+                    {
+                        histfunc: "count",
+                        y: y,
+                        x: x,
+                        type: "bar",
+                        name: "count",
+                    }
+                ]
+
+                console.log(x)
+                console.log(y)
+
+                //updateResults(max_prob,taFacialExpressionResults)
+                 
+            });
+            window.Realeyesit.experienceSdk.error((err) => {
+                updateResults(' \n\n Error occurred: ' + JSON.stringify(err), taStatusResults);
+            });
+            /*Init mirror*/
+            video.setAttribute('playsinline', '');
+            video.playsinline = '';
+            video.setAttribute('muted', '');
+            video.controls = true;
+            video.muted = true;
+            video.autoplay = true;
+            video.srcObject = this.cameraStream;
+            const loadedMetadataHandler = () => {
+                this.video.play();
+            };
+            if (video.onloadedmetadata) {
+                video.onloadedmetadata = loadedMetadataHandler;
+            }
+            video.addEventListener('loadedmetadata', loadedMetadataHandler);
+            /* End of init mirror*/
+            /* Activate user interface */
+            divSdk.style.visibility = 'visible';
+        }
+        /* Controls */
+        async function stop() {
+            updateResults('Stop has been called!');
+            try {
+                window.Realeyesit.experienceSdk.stop(false);
+                btStart.disabled = false;
+                btStop.disabled = true;
+            } catch (error) {
+                updateResults(`Error ${error}`);
+            }
+        }
+        async function start() {
+            updateResults('Start has been called!');
+            try {
+                window.Realeyesit.experienceSdk.start();
+                btStart.disabled = true;
+                btStop.disabled = false;
+            } catch (error) {
+                updateResults(`Error ${error}`);
+            }
+        }
 
   var timeline = []; // this array stores the events we want to run in the experiment
 
@@ -407,6 +519,15 @@ DESCRIPTION: This is the jsPsych version of the stop-signal task
       });
 
     }
+
+  };
+
+  var webcam_permission = {
+
+    type: "custom-realeyes-plugin",
+
+    stimulus: 'Please enable facial expression recognition',
+    choices: ['Init SDK','Start','Stop']
 
   };
 
@@ -840,11 +961,11 @@ DESCRIPTION: This is the jsPsych version of the stop-signal task
 
     if (fullscreen){
 
-      var start_timeline = [welcome, consent, participant_id, age, gender, fullscr, instructions]
+      var start_timeline = [welcome,webcam_permission, consent, participant_id, age, gender, fullscr, instructions]
 
     } else {
 
-      var start_timeline = [welcome, consent, participant_id, age, gender, instructions]
+      var start_timeline = [welcome,webcam_permission, consent, participant_id, age, gender, instructions]
 
     }
 
@@ -864,11 +985,11 @@ DESCRIPTION: This is the jsPsych version of the stop-signal task
 
       if (fullscreen) {
 
-        var start_timeline = [welcome, consent, age, gender, fullscr, instructions]
+        var start_timeline = [welcome,webcam_permission, consent, age, gender, fullscr, instructions]
 
       } else {
 
-        var start_timeline = [welcome, consent, age, gender, instructions]
+        var start_timeline = [welcome,webcam_permission, consent, age, gender, instructions]
 
       }
 
