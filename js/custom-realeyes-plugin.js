@@ -338,6 +338,9 @@ jsPsych.plugins["custom-realeyes-plugin"] = (function() {
         if (trial.response_ends_trial) {
            //end_trial();
         }
+        if (choice == 1) {
+          end_trial();
+        }
       };
   
       // function to end trial when it is time

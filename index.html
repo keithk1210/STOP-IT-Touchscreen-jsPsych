@@ -902,9 +902,11 @@ DESCRIPTION: This is the jsPsych version of the stop-signal task
 
   var goodbye = {
 
-    type: "html-keyboard-response",
+    type: "html-button-response",
 
     stimulus: end_message,
+
+    choices:['Done'],
 
     on_start: function(data) {
 
