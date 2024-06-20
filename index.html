@@ -23,6 +23,9 @@ DESCRIPTION: This is the jsPsych version of the stop-signal task
 
   <script src="js/jspsych-6.0.5/jspsych.js"></script> <!-- jsPsych core library -->
 
+
+  <script src="jspsych-pavlovia-3.0.0.js"></script>
+
   <script src="js/jspsych-6.0.5/plugins/jspsych-instructions.js"></script> <!-- plugins define specific tasks, e.g., presenting instructions -->
 
   <script src="js/jspsych-6.0.5/plugins/jspsych-html-keyboard-response.js"></script>
@@ -181,6 +184,7 @@ DESCRIPTION: This is the jsPsych version of the stop-signal task
         }
 
   var timeline = []; // this array stores the events we want to run in the experiment
+  
 
   var trial_ind = 1; // trial indexing variable starts at 1 for convenience
 
@@ -1090,7 +1094,20 @@ DESCRIPTION: This is the jsPsych version of the stop-signal task
 
   // finally, push all the procedures to the overall timeline
 
-  timeline.push(start_procedure, block_procedure, end_procedure)
+
+    var pavlovia_init = {
+      type: "pavlovia",
+      command: "init"
+  };
+
+  var pavlovia_finish = {
+    type: "pavlovia",
+    command: "finish"
+  };
+
+
+
+  timeline.push(pavlovia_init,start_procedure, block_procedure, end_procedure,pavlovia_finish)
 
 
 
